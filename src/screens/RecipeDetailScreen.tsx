@@ -11,8 +11,9 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRecipeDetail } from '@hooks/useRecipes';
 import { useRecipeUserData } from '@hooks/useRecipeUserData';
-import { RootStackParamList } from '@types/index';
+import { RootStackParamList } from '@t/index';
 import { Colors } from '@constants/colors';
+import { supabase } from '@services/supabase';
 import NoteCard from '@components/NoteCard';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'RecipeDetail'>;
@@ -61,7 +62,10 @@ function parseQuantity(token: string): number | null {
   // --- Mixed whole + ASCII fraction (e.g. "1 1/2") ---
   const mixedAscii = trimmed.match(/^(\d+)\s+(\d+)\/(\d+)$/);
   if (mixedAscii) {
-    return parseInt(mixedAscii[1], 10) + parseInt(mixedAscii[2], 10) / parseInt(mixedAscii[3], 10);
+    return (
+      parseInt(mixedAscii[1], 10) +
+      parseInt(mixedAscii[2], 10) / parseInt(mixedAscii[3], 10)
+    );
   }
 
   // --- ASCII fraction only (e.g. "1/2") ---
@@ -318,6 +322,15 @@ const RecipeDetailScreen: React.FC<Props> = ({ route, navigation }) => {
     saveNote,
   } = useRecipeUserData(recipeId);
 
+  /** ID of the signed-in user — used to determine recipe ownership for edit. */
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setCurrentUserId(data.session?.user?.id ?? null);
+    });
+  }, []);
+
   /**
    * Current serving count. Initialised to the recipe's base quantity once
    * the recipe loads. Bounded [1, 20].
@@ -386,7 +399,7 @@ const RecipeDetailScreen: React.FC<Props> = ({ route, navigation }) => {
 
   // Resolve the current serving count. Falls back to safe defaults when
   // recipe is not yet available so the memos below can run unconditionally.
-  const currentServings = recipe ? (servings ?? recipe.quantity) : 1;
+  const currentServings = recipe ? servings ?? recipe.quantity : 1;
   const ratio = recipe ? currentServings / recipe.quantity : 1;
   const atMin = currentServings === 1;
   const atMax = currentServings === 20;
@@ -399,35 +412,57 @@ const RecipeDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   }, [checkedSteps, recipe]);
 
   const perServingNutrition = recipe?.nutrition ?? null;
+  const isOwner = !!recipe?.userId && recipe.userId === currentUserId;
 
   /**
-   * Syncs the header's right button whenever the favourite state changes.
-   *
-   * `setOptions` is used rather than a static `headerRight` in the navigator
-   * because the icon must react to runtime state (isFavorited). Placing the
-   * call inside a useEffect ensures it fires after each render where the
-   * relevant values have changed, keeping the icon in sync without triggering
-   * extra renders of the screen itself.
+   * Syncs the header buttons whenever ownership, favourite state, or recipe
+   * identity changes. The pencil is only rendered for user-owned recipes;
+   * the heart is always present for authenticated users.
    */
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <TouchableOpacity
-          onPress={toggleFavorite}
-          disabled={favoriteWriting}
-          accessibilityRole="button"
-          accessibilityLabel={isFavorited ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-          style={{ padding: 8 }}
-        >
-          <Ionicons
-            name={isFavorited ? 'heart' : 'heart-outline'}
-            size={24}
-            color={isFavorited ? Colors.accent : Colors.textSecondary}
-          />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          {isOwner && (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('RecipeForm', { recipeId })}
+              accessibilityRole="button"
+              accessibilityLabel="Modifier la recette"
+              style={{ padding: 8 }}
+            >
+              <Ionicons
+                name="create-outline"
+                size={24}
+                color={Colors.textSecondary}
+              />
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            onPress={toggleFavorite}
+            disabled={favoriteWriting}
+            accessibilityRole="button"
+            accessibilityLabel={
+              isFavorited ? 'Retirer des favoris' : 'Ajouter aux favoris'
+            }
+            style={{ padding: 8 }}
+          >
+            <Ionicons
+              name={isFavorited ? 'heart' : 'heart-outline'}
+              size={24}
+              color={isFavorited ? Colors.accent : Colors.textSecondary}
+            />
+          </TouchableOpacity>
+        </View>
       ),
     });
-  }, [isFavorited, favoriteWriting, toggleFavorite, navigation]);
+  }, [
+    isOwner,
+    isFavorited,
+    favoriteWriting,
+    toggleFavorite,
+    navigation,
+    recipeId,
+  ]);
 
   if (loading) {
     return (
@@ -464,7 +499,11 @@ const RecipeDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           accessibilityState={{ disabled: atMin }}
           hitSlop={HIT_SLOP}
         >
-          <Text style={[styles.scalerButton, atMin && styles.scalerButtonDisabled]}>−</Text>
+          <Text
+            style={[styles.scalerButton, atMin && styles.scalerButtonDisabled]}
+          >
+            −
+          </Text>
         </TouchableOpacity>
 
         <Text style={styles.metaText}>
@@ -479,7 +518,11 @@ const RecipeDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           accessibilityState={{ disabled: atMax }}
           hitSlop={HIT_SLOP}
         >
-          <Text style={[styles.scalerButton, atMax && styles.scalerButtonDisabled]}>+</Text>
+          <Text
+            style={[styles.scalerButton, atMax && styles.scalerButtonDisabled]}
+          >
+            +
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -490,29 +533,49 @@ const RecipeDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             {/* KCAL */}
             <View style={styles.nutritionPill}>
               <Text style={styles.nutritionLabel}>KCAL</Text>
-              <Text style={styles.nutritionValue}>{perServingNutrition.kcal}</Text>
+              <Text style={styles.nutritionValue}>
+                {perServingNutrition.kcal}
+              </Text>
               <Text style={styles.nutritionUnit}>kcal</Text>
             </View>
             {/* PROT. */}
             <View style={styles.nutritionPill}>
               <Text style={styles.nutritionLabel}>PROT.</Text>
-              <Text style={styles.nutritionValue}>{perServingNutrition.proteines}</Text>
+              <Text style={styles.nutritionValue}>
+                {perServingNutrition.proteines}
+              </Text>
               <Text style={styles.nutritionUnit}>g</Text>
             </View>
             {/* GLUC. */}
             <View style={styles.nutritionPill}>
               <Text style={styles.nutritionLabel}>GLUC.</Text>
-              <Text style={styles.nutritionValue}>{perServingNutrition.glucides}</Text>
+              <Text style={styles.nutritionValue}>
+                {perServingNutrition.glucides}
+              </Text>
               <Text style={styles.nutritionUnit}>g</Text>
             </View>
             {/* LIP. */}
             <View style={styles.nutritionPill}>
               <Text style={styles.nutritionLabel}>LIP.</Text>
-              <Text style={styles.nutritionValue}>{perServingNutrition.lipides}</Text>
+              <Text style={styles.nutritionValue}>
+                {perServingNutrition.lipides}
+              </Text>
               <Text style={styles.nutritionUnit}>g</Text>
             </View>
           </View>
-          <Text style={styles.nutritionFootnote}>Par portion</Text>
+          <View style={styles.nutritionFootnoteRow}>
+            <Text style={styles.nutritionFootnote}>Par portion</Text>
+            {recipe.nutritionSource === 'ai_estimated' && (
+              <View style={styles.aiBadge}>
+                <Ionicons
+                  name="sparkles-outline"
+                  size={11}
+                  color={Colors.accentGreen}
+                />
+                <Text style={styles.aiBadgeText}>Estimé par IA</Text>
+              </View>
+            )}
+          </View>
         </View>
       )}
 
@@ -799,6 +862,15 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   /**
+   * Row that holds the "Par portion" footnote and the optional AI badge.
+   */
+  nutritionFootnoteRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  /**
    * Footnote below the pills clarifying that values are for the current
    * serving count, not a single serving — important since the scaler changes
    * the displayed numbers.
@@ -807,6 +879,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textMuted,
     textAlign: 'center',
+  },
+  aiBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  aiBadgeText: {
+    fontSize: 11,
+    color: Colors.accentGreen,
+    fontWeight: '500',
   },
 
   /**

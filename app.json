@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "Recipe App",
+    "slug": "recipe-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.anthonydube.recipeapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.anthonydube.recipeapp"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "915f5881-56a5-46b3-9efe-c9b44d479d53"
+      }
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
+  }
+}

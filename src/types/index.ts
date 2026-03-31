@@ -33,6 +33,10 @@ export type Recipe = {
     /** Fat in grams per serving. */
     lipides: number;
   };
+  /** UUID of the user who created this recipe; null for seeded/base recipes. */
+  userId: string | null;
+  /** Source of nutrition data; drives the AI badge in RecipeDetailScreen. */
+  nutritionSource: 'manual' | 'ai_estimated' | null;
 };
 
 export type Category = {
@@ -46,6 +50,13 @@ export type RootStackParamList = {
   Summary: undefined;
   Category: { categoryId: string; categoryName: string };
   RecipeDetail: RecipeDetailParams;
+  Compte: undefined;
+  RecipeForm: { recipeId?: string };
+};
+
+export type AuthStackParamList = {
+  Auth: undefined;
+  MotDePasseOublie: undefined;
 };
 
 /**
@@ -71,5 +82,17 @@ export type RootTabParamList = {
  */
 export type ExplorerStackParamList = {
   Explorer: undefined;
+  Favoris: undefined;
   RecipeDetail: RecipeDetailParams;
+  RecipeForm: { recipeId?: string };
+};
+
+export type GroceryCategory = 'viandes' | 'epicerie' | 'produits_frais';
+
+export type GroceryItem = {
+  id: string;
+  name: string;
+  category: GroceryCategory;
+  checked: boolean;
+  createdAt: string;
 };

@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useRecipesByCategory } from '@hooks/useRecipes';
-import { RootStackParamList, Recipe } from '@types/index';
+import { RootStackParamList, Recipe } from '@t/index';
 import { Colors } from '@constants/colors';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Category'>;

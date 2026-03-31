@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Recipe, Category } from '@types/index';
+import { Recipe, Category } from '@t/index';
 import recipeService from '@services/recipeService';
 
 /**

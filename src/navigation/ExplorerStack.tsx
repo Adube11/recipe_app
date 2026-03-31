@@ -1,9 +1,11 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { ExplorerStackParamList } from '@types/index';
+import { ExplorerStackParamList } from '@t/index';
 import { Colors } from '@constants/colors';
 import ExplorerScreen from '@screens/ExplorerScreen';
+import FavorisScreen from '@screens/FavorisScreen';
 import RecipeDetailScreen from '@screens/RecipeDetailScreen';
+import RecipeFormScreen from '@screens/RecipeFormScreen';
 
 const Stack = createNativeStackNavigator<ExplorerStackParamList>();
 
@@ -36,9 +38,23 @@ export const ExplorerStack = () => {
         options={{ headerShown: false }}
       />
       <Stack.Screen
+        name="Favoris"
+        component={FavorisScreen}
+        options={{ title: 'Mes favoris' }}
+      />
+      <Stack.Screen
         name="RecipeDetail"
         component={RecipeDetailScreen}
         options={({ route }) => ({ title: route.params.recipeName })}
+      />
+      <Stack.Screen
+        name="RecipeForm"
+        component={RecipeFormScreen}
+        options={({ route }) => ({
+          title: route.params?.recipeId
+            ? 'Modifier la recette'
+            : 'Nouvelle recette',
+        })}
       />
     </Stack.Navigator>
   );

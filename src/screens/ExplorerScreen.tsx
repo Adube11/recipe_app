@@ -1,16 +1,17 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import {
-  View,
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
   Text,
   TextInput,
-  FlatList,
   TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ExplorerStackParamList, Recipe, Difficulty } from '@types/index';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { ExplorerStackParamList, Recipe, Difficulty } from '@t/index';
 import { Colors } from '@constants/colors';
 import recipeService from '@services/recipeService';
 
@@ -149,19 +150,29 @@ const ExplorerScreen: React.FC<Props> = ({ navigation }) => {
     [navigation],
   );
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.sageDark} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-      {/* Search bar */}
+      {/* Collections hub */}
+      <Text style={styles.sectionLabel}>MES COLLECTIONS</Text>
+      <TouchableOpacity
+        style={styles.collectionRow}
+        activeOpacity={0.75}
+        onPress={() => navigation.navigate('Favoris')}
+        accessibilityRole="button"
+        accessibilityLabel="Voir mes recettes favorites"
+      >
+        <Ionicons
+          name="heart"
+          size={18}
+          color={Colors.accent}
+          style={styles.collectionIcon}
+        />
+        <Text style={styles.collectionLabel}>Mes favoris</Text>
+        <Text style={styles.chevron}>›</Text>
+      </TouchableOpacity>
+
+      {/* Search section */}
+      <Text style={styles.sectionLabel}>RECHERCHER</Text>
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
@@ -190,7 +201,9 @@ const ExplorerScreen: React.FC<Props> = ({ navigation }) => {
               accessibilityLabel={`Filtrer par difficulté : ${DIFFICULTY_LABELS[d]}`}
               accessibilityState={{ selected: active }}
             >
-              <Text style={[styles.chipLabel, active && styles.chipLabelActive]}>
+              <Text
+                style={[styles.chipLabel, active && styles.chipLabelActive]}
+              >
                 {DIFFICULTY_LABELS[d]}
               </Text>
             </TouchableOpacity>
@@ -205,8 +218,12 @@ const ExplorerScreen: React.FC<Props> = ({ navigation }) => {
         </Text>
       )}
 
-      {/* Empty / default state */}
-      {!hasInput ? (
+      {/* Results area */}
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={Colors.sageDark} />
+        </View>
+      ) : !hasInput ? (
         <View style={styles.emptyState}>
           <Text style={styles.emptyPrompt}>
             Recherchez par nom ou ingrédient
@@ -246,10 +263,46 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
+  /* Collections hub */
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: Colors.textMuted,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  collectionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginBottom: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: Colors.cardBackground,
+    borderRadius: 14,
+    shadowColor: Colors.shadowBase,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  collectionIcon: {
+    marginRight: 10,
+  },
+  collectionLabel: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+  },
+
   /* Search bar */
   searchContainer: {
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: 8,
     paddingBottom: 12,
   },
   searchInput: {

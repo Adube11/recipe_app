@@ -1,7 +1,7 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { RootTabParamList } from '@types/index';
+import { RootTabParamList } from '@t/index';
 import { Colors } from '@constants/colors';
 import { RecettesStack } from '@navigation/RecettesStack';
 import { ExplorerStack } from '@navigation/ExplorerStack';

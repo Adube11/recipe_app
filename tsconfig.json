@@ -22,7 +22,7 @@
       "@navigation/*": ["navigation/*"],
       "@screens/*": ["screens/*"],
       "@services/*": ["services/*"],
-      "@types/*": ["types/*"],
+      "@t/*": ["types/*"],
       "@constants/*": ["constants/*"]
     }
   },

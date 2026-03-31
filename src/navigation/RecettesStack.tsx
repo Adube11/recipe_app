@@ -1,10 +1,12 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { RootStackParamList } from '@types/index';
+import { RootStackParamList } from '@t/index';
 import { Colors } from '@constants/colors';
 import SummaryScreen from '@screens/SummaryScreen';
 import CategoryScreen from '@screens/CategoryScreen';
 import RecipeDetailScreen from '@screens/RecipeDetailScreen';
+import CompteScreen from '@screens/CompteScreen';
+import RecipeFormScreen from '@screens/RecipeFormScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -47,6 +49,20 @@ export const RecettesStack = () => {
         name="RecipeDetail"
         component={RecipeDetailScreen}
         options={({ route }) => ({ title: route.params.recipeName })}
+      />
+      <Stack.Screen
+        name="Compte"
+        component={CompteScreen}
+        options={{ title: 'Mon compte' }}
+      />
+      <Stack.Screen
+        name="RecipeForm"
+        component={RecipeFormScreen}
+        options={({ route }) => ({
+          title: route.params?.recipeId
+            ? 'Modifier la recette'
+            : 'Nouvelle recette',
+        })}
       />
     </Stack.Navigator>
   );

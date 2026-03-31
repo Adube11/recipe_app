@@ -1,0 +1,33 @@
+name: CD — Production Submit
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  eas-submit-production:
+    name: EAS Build + Submit (production)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build production
+        run: eas build --profile production --platform all --non-interactive
+
+      - name: Submit to stores
+        run: eas submit --profile production --platform all --non-interactive
