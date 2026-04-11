@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@constants/colors';
 
@@ -12,8 +12,12 @@ import { Colors } from '@constants/colors';
 const PlanifierScreen = () => {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <Text style={styles.heading}>Planifier</Text>
-      <Text style={styles.subtitle}>Bientôt disponible</Text>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Planifier</Text>
+      </View>
+      <View style={styles.body}>
+        <Text style={styles.subtitle}>Bientôt disponible</Text>
+      </View>
     </SafeAreaView>
   );
 };
@@ -22,14 +26,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  heading: {
-    fontSize: 24,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  headerTitle: {
+    fontSize: 22,
     fontWeight: '700',
     color: Colors.sageDark,
-    marginBottom: 8,
+  },
+  body: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   subtitle: {
     fontSize: 16,

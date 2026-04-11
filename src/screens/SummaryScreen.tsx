@@ -92,15 +92,15 @@ const SummaryScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
       <View style={styles.container}>
-        <View style={styles.heroRow}>
-          <Text style={styles.hero}>Mes{'\n'}Recettes</Text>
-          <View style={styles.heroActions}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Mes recettes</Text>
+          <View style={styles.headerActions}>
             <TouchableOpacity
               onPress={() => navigation.navigate('RecipeForm', {})}
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               accessibilityLabel="Ajouter une recette"
             >
-              <Ionicons name="add-outline" size={30} color={Colors.accent} />
+              <Ionicons name="add-outline" size={26} color={Colors.accent} />
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => navigation.navigate('Compte')}
@@ -109,7 +109,7 @@ const SummaryScreen: React.FC<Props> = ({ navigation }) => {
             >
               <Ionicons
                 name="person-circle-outline"
-                size={30}
+                size={26}
                 color={Colors.textMuted}
               />
             </TouchableOpacity>
@@ -138,28 +138,29 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingHorizontal: 20,
   },
-  heroRow: {
+  header: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 24,
-    marginBottom: 28,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
-  heroActions: {
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: Colors.sageDark,
+  },
+  headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  hero: {
-    fontSize: 40,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-    lineHeight: 46,
-    letterSpacing: -0.5,
-  },
   list: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
     paddingBottom: 32,
   },
   categoryCard: {
