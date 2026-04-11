@@ -40,7 +40,7 @@ export const ExplorerStack = () => {
       <Stack.Screen
         name="Favoris"
         component={FavorisScreen}
-        options={{ title: 'Mes favoris' }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="RecipeDetail"
