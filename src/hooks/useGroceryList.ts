@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Crypto from 'expo-crypto';
 import { GroceryItem, GroceryCategory } from '@t/index';
 
 const STORAGE_KEY = 'courses:grocery_items';
@@ -55,7 +54,7 @@ export function useGroceryList(): UseGroceryListReturn {
   const addItem = useCallback(
     async (name: string, category: GroceryCategory) => {
       const item: GroceryItem = {
-        id: Crypto.randomUUID(),
+        id: crypto.randomUUID(),
         name: name.trim(),
         category,
         checked: false,

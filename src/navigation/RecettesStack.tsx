@@ -41,9 +41,7 @@ export const RecettesStack = () => {
       <Stack.Screen
         name="Category"
         component={CategoryScreen}
-        options={({ route }) => ({
-          title: route.params?.categoryName || 'Catégories',
-        })}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="RecipeDetail"

@@ -7,6 +7,8 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useRecipesByCategory } from '@hooks/useRecipes';
 import { RootStackParamList, Recipe } from '@t/index';
@@ -68,7 +70,18 @@ const CategoryScreen: React.FC<Props> = ({ navigation, route }) => {
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
+          <Ionicons name="chevron-back" size={26} color={Colors.sageDark} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>
+          {route.params?.categoryName || 'Catégories'}
+        </Text>
+      </View>
       <FlatList
         data={recipes}
         keyExtractor={(item) => item.id}
@@ -81,7 +94,7 @@ const CategoryScreen: React.FC<Props> = ({ navigation, route }) => {
           </Text>
         }
       />
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -89,7 +102,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
     paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: Colors.sageDark,
   },
   /** Full-screen centred layout for loading and error states. */
   centered: {
@@ -99,6 +125,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   list: {
+    paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 32,
   },
