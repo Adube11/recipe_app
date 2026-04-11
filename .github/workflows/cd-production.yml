@@ -27,7 +27,7 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
 
       - name: Build production
-        run: eas build --profile production --platform all --non-interactive
+        run: eas build --profile production --platform android --non-interactive
 
       - name: Submit to stores
-        run: eas submit --profile production --platform all --non-interactive
+        run: eas submit --profile production --platform android --non-interactive
