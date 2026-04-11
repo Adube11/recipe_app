@@ -1,12 +1,12 @@
-name: CD — Preview Build
+name: CD — Preview Update
 
 on:
   push:
     branches: [main]
 
 jobs:
-  eas-build-preview:
-    name: EAS Build (preview)
+  eas-update-preview:
+    name: EAS Update (preview)
     runs-on: ubuntu-latest
 
     steps:
@@ -25,5 +25,5 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Trigger EAS build
-        run: eas build --profile preview --platform android --non-interactive
+      - name: Publish update
+        run: eas update --branch preview --message "${{ github.event.head_commit.message }}" --non-interactive
