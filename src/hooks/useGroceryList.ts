@@ -4,14 +4,18 @@ import { GroceryItem, GroceryCategory } from '@t/index';
 
 const STORAGE_KEY = 'courses:grocery_items';
 
+function generateId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
 type UseGroceryListReturn = {
   items: GroceryItem[];
   isLoading: boolean;
-  addItem: (name: string, category: GroceryCategory) => Promise<void>;
-  toggleItem: (id: string) => Promise<void>;
-  deleteItem: (id: string) => Promise<void>;
-  clearChecked: () => Promise<void>;
-  clearAll: () => Promise<void>;
+  addItem: (name: string, category: GroceryCategory) => void;
+  toggleItem: (id: string) => void;
+  deleteItem: (id: string) => void;
+  clearChecked: () => void;
+  clearAll: () => void;
 };
 
 export function useGroceryList(): UseGroceryListReturn {
@@ -39,36 +43,32 @@ export function useGroceryList(): UseGroceryListReturn {
   }, []);
 
   const persist = useCallback(
-    async (updater: (prev: GroceryItem[]) => GroceryItem[]) => {
+    (updater: (prev: GroceryItem[]) => GroceryItem[]) => {
       const next = updater(itemsRef.current);
       itemsRef.current = next;
       setItems(next);
-      try {
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        // Write failed — in-memory state is already updated; next launch will see stale data
-      }
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
     },
     [],
   );
 
   const addItem = useCallback(
-    async (name: string, category: GroceryCategory) => {
+    (name: string, category: GroceryCategory) => {
       const item: GroceryItem = {
-        id: crypto.randomUUID(),
+        id: generateId(),
         name: name.trim(),
         category,
         checked: false,
         createdAt: new Date().toISOString(),
       };
-      await persist((prev) => [...prev, item]);
+      persist((prev) => [...prev, item]);
     },
     [persist],
   );
 
   const toggleItem = useCallback(
-    async (id: string) => {
-      await persist((prev) =>
+    (id: string) => {
+      persist((prev) =>
         prev.map((item) =>
           item.id === id ? { ...item, checked: !item.checked } : item,
         ),
@@ -78,18 +78,18 @@ export function useGroceryList(): UseGroceryListReturn {
   );
 
   const deleteItem = useCallback(
-    async (id: string) => {
-      await persist((prev) => prev.filter((item) => item.id !== id));
+    (id: string) => {
+      persist((prev) => prev.filter((item) => item.id !== id));
     },
     [persist],
   );
 
-  const clearChecked = useCallback(async () => {
-    await persist((prev) => prev.filter((item) => !item.checked));
+  const clearChecked = useCallback(() => {
+    persist((prev) => prev.filter((item) => !item.checked));
   }, [persist]);
 
-  const clearAll = useCallback(async () => {
-    await persist(() => []);
+  const clearAll = useCallback(() => {
+    persist(() => []);
   }, [persist]);
 
   return {

@@ -4,6 +4,10 @@ import { Recipe } from '@t/index';
 
 const STORAGE_KEY = 'planifier:meals';
 
+function generateId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
 export type MealSlot = 'dejeuner' | 'diner' | 'souper';
 
 export type PlannedMeal = {
@@ -24,9 +28,9 @@ export type PlannedMeal = {
 type UsePlanifierReturn = {
   meals: PlannedMeal[];
   isLoading: boolean;
-  addMeal: (dayIndex: number, slot: MealSlot, recipe: Recipe) => Promise<void>;
-  removeMeal: (id: string) => Promise<void>;
-  clearAll: () => Promise<void>;
+  addMeal: (dayIndex: number, slot: MealSlot, recipe: Recipe) => void;
+  removeMeal: (id: string) => void;
+  clearAll: () => void;
 };
 
 export function usePlanifier(): UsePlanifierReturn {
@@ -54,43 +58,39 @@ export function usePlanifier(): UsePlanifierReturn {
   }, []);
 
   const persist = useCallback(
-    async (updater: (prev: PlannedMeal[]) => PlannedMeal[]) => {
+    (updater: (prev: PlannedMeal[]) => PlannedMeal[]) => {
       const next = updater(mealsRef.current);
       mealsRef.current = next;
       setMeals(next);
-      try {
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        // Write failed — in-memory state is already updated
-      }
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next)).catch(() => {});
     },
     [],
   );
 
   const addMeal = useCallback(
-    async (dayIndex: number, slot: MealSlot, recipe: Recipe) => {
+    (dayIndex: number, slot: MealSlot, recipe: Recipe) => {
       const meal: PlannedMeal = {
-        id: crypto.randomUUID(),
+        id: generateId(),
         dayIndex,
         slot,
         recipeId: recipe.id,
         recipeName: recipe.name,
         nutrition: recipe.nutrition,
       };
-      await persist((prev) => [...prev, meal]);
+      persist((prev) => [...prev, meal]);
     },
     [persist],
   );
 
   const removeMeal = useCallback(
-    async (id: string) => {
-      await persist((prev) => prev.filter((m) => m.id !== id));
+    (id: string) => {
+      persist((prev) => prev.filter((m) => m.id !== id));
     },
     [persist],
   );
 
-  const clearAll = useCallback(async () => {
-    await persist(() => []);
+  const clearAll = useCallback(() => {
+    persist(() => []);
   }, [persist]);
 
   return { meals, isLoading, addMeal, removeMeal, clearAll };
