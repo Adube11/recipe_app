@@ -87,7 +87,11 @@ export type ExplorerStackParamList = {
   RecipeForm: { recipeId?: string };
 };
 
-export type GroceryCategory = 'viandes' | 'epicerie' | 'produits_frais';
+export type GroceryCategory =
+  | 'viandes'
+  | 'epicerie'
+  | 'produits_laitiers'
+  | 'fruits_legumes';
 
 export type GroceryItem = {
   id: string;

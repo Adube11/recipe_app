@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GroceryItem, GroceryCategory } from '@t/index';
 
@@ -17,13 +17,16 @@ type UseGroceryListReturn = {
 export function useGroceryList(): UseGroceryListReturn {
   const [items, setItems] = useState<GroceryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const itemsRef = useRef<GroceryItem[]>([]);
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY)
       .then((raw) => {
         if (raw) {
           try {
-            setItems(JSON.parse(raw));
+            const parsed = JSON.parse(raw);
+            itemsRef.current = parsed;
+            setItems(parsed);
           } catch {
             setItems([]);
           }
@@ -37,11 +40,9 @@ export function useGroceryList(): UseGroceryListReturn {
 
   const persist = useCallback(
     async (updater: (prev: GroceryItem[]) => GroceryItem[]) => {
-      let next: GroceryItem[] = [];
-      setItems((prev) => {
-        next = updater(prev);
-        return next;
-      });
+      const next = updater(itemsRef.current);
+      itemsRef.current = next;
+      setItems(next);
       try {
         await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       } catch {

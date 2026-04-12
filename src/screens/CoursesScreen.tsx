@@ -19,10 +19,16 @@ import { GroceryCategory, GroceryItem } from '@t/index';
 const CATEGORY_LABELS: Record<GroceryCategory, string> = {
   viandes: 'Viandes',
   epicerie: 'Épicerie',
-  produits_frais: 'Produits frais',
+  produits_laitiers: 'Produits Laitiers',
+  fruits_legumes: 'Fruits et Légumes',
 };
 
-const CATEGORIES: GroceryCategory[] = ['viandes', 'produits_frais', 'epicerie'];
+const CATEGORIES: GroceryCategory[] = [
+  'viandes',
+  'epicerie',
+  'produits_laitiers',
+  'fruits_legumes',
+];
 
 const CoursesScreen = () => {
   const {

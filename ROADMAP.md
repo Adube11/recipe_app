@@ -133,12 +133,14 @@
 
 ---
 
-## Phase 11 — Planifier + Historique
-*Requires auth (Phase 8) — meal plans are user-owned.*
+## Phase 11 — Planifier ✓
 
-- [ ] Planifier screen: week view, assign recipes to days and meal slots (déjeuner / dîner / souper)
-- [ ] Historique de cuisine: last cooked date per recipe, surfaced in Planifier as a hint
-- [ ] `meal_plans` and `cooking_history` tables already exist in Supabase with RLS
+- [x] Week view (Dimanche → Samedi), assign recipes to 3 meal slots per day (Déjeuner / Dîner / Souper)
+- [x] Daily macro totals + weekly macro summary (kcal / prot / gluc / lip)
+- [x] Recipe picker modal — lazy-loads full recipe list, shows kcal per recipe
+- [x] Remove individual meals (× chip) + "Tout effacer" with confirmation
+- [x] AsyncStorage only — intentionally local, never synced to Supabase
+- [defer] Historique de cuisine — not needed
 
 ---
 
