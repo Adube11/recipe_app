@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   SectionList,
   StyleSheet,
   Text,
@@ -150,7 +151,12 @@ const CoursesScreen = () => {
         )}
 
         <SafeAreaView edges={['bottom']} style={styles.inputWrapper}>
-          <View style={styles.chips}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.chipsScroll}
+            contentContainerStyle={styles.chips}
+          >
             {CATEGORIES.map((cat) => (
               <TouchableOpacity
                 key={cat}
@@ -170,7 +176,7 @@ const CoursesScreen = () => {
                 </Text>
               </TouchableOpacity>
             ))}
-          </View>
+          </ScrollView>
           <View style={styles.inputRow}>
             <TextInput
               ref={inputRef}
@@ -320,10 +326,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4,
   },
+  chipsScroll: {
+    marginBottom: 10,
+  },
   chips: {
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 10,
   },
   chip: {
     paddingHorizontal: 12,

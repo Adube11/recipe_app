@@ -43,20 +43,6 @@ const SLOT_LABELS: Record<MealSlot, string> = {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Returns the Sunday that starts the current week. */
-function getWeekStart(): Date {
-  const today = new Date();
-  const start = new Date(today);
-  start.setDate(today.getDate() - today.getDay()); // getDay(): 0=Sun
-  start.setHours(0, 0, 0, 0);
-  return start;
-}
-
-/** Formats a Date as "D MMM" in French — e.g. "13 avr." */
-function formatDate(date: Date): string {
-  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
-}
-
 type Macros = {
   kcal: number;
   proteines: number;
@@ -119,8 +105,6 @@ const PlanifierScreen = () => {
     slot: MealSlot;
   } | null>(null);
 
-  const weekStart = getWeekStart();
-  const weekEnd = new Date(weekStart.getTime() + 6 * 86_400_000);
   const weeklyMacros = sumMacros(meals);
 
   /** Opens the recipe picker for a given day + slot. Lazy-loads recipe list. */
@@ -131,7 +115,9 @@ const PlanifierScreen = () => {
       if (allRecipes.length === 0) {
         setRecipesLoading(true);
         const data = await recipeService.getAllRecipes();
-        setAllRecipes(data);
+        setAllRecipes(
+          data.filter((r) => r.category !== '4' && r.category !== '5'),
+        );
         setRecipesLoading(false);
       }
     },
@@ -185,11 +171,6 @@ const PlanifierScreen = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Week range */}
-        <Text style={styles.weekLabel}>
-          Semaine du {formatDate(weekStart)} au {formatDate(weekEnd)}
-        </Text>
-
         {/* Weekly macro summary */}
         {weeklyMacros && (
           <View style={styles.weeklyCard}>
@@ -200,7 +181,6 @@ const PlanifierScreen = () => {
 
         {/* Day cards: Dimanche (0) → Samedi (6) */}
         {Array.from({ length: 7 }, (_, dayIndex) => {
-          const dayDate = new Date(weekStart.getTime() + dayIndex * 86_400_000);
           const dayMeals = meals.filter((m) => m.dayIndex === dayIndex);
           const dayMacros = sumMacros(dayMeals);
 
@@ -209,7 +189,6 @@ const PlanifierScreen = () => {
               {/* Day header */}
               <View style={styles.dayHeader}>
                 <Text style={styles.dayName}>{DAY_NAMES[dayIndex]}</Text>
-                <Text style={styles.dayDate}>{formatDate(dayDate)}</Text>
               </View>
 
               {/* Meal slots */}
@@ -369,14 +348,6 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
-  /* Week label */
-  weekLabel: {
-    fontSize: 13,
-    color: Colors.textMuted,
-    marginBottom: 12,
-    paddingHorizontal: 4,
-  },
-
   /* Weekly macro card */
   weeklyCard: {
     backgroundColor: Colors.cardBackground,
@@ -448,10 +419,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: Colors.headerGreen,
-  },
-  dayDate: {
-    fontSize: 13,
-    color: Colors.textMuted,
   },
 
   /* Slot rows */
