@@ -33,13 +33,17 @@ export const useRecipesByCategory = (categoryId: string) => {
     const fetch = async () => {
       setLoading(true);
       setError(null);
-      const data = await recipeService.getRecipesByCategory(categoryId);
-      if (!cancelled) {
-        // recipeService returns [] on error; empty result here means either
-        // the category is genuinely empty or a fetch error occurred.
-        // The service already logs the Supabase error; we surface a UI message.
-        setRecipes(data);
-        setLoading(false);
+      try {
+        const data = await recipeService.getRecipesByCategory(categoryId);
+        if (!cancelled) {
+          setRecipes(data);
+          setLoading(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setError('Impossible de charger les recettes.');
+          setLoading(false);
+        }
       }
     };
 

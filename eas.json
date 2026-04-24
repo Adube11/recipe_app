@@ -15,15 +15,10 @@
       "channel": "preview",
       "ios": {
         "simulator": false
-      }
-    },
-    "production": {
-      "ios": {
-        "simulator": false
+      },
+      "android": {
+        "buildType": "apk"
       }
     }
-  },
-  "submit": {
-    "production": {}
   }
 }

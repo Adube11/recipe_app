@@ -45,7 +45,7 @@ export const ExplorerStack = () => {
       <Stack.Screen
         name="RecipeDetail"
         component={RecipeDetailScreen}
-        options={({ route }) => ({ title: route.params.recipeName })}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="RecipeForm"

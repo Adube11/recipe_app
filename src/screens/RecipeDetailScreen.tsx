@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRecipeDetail } from '@hooks/useRecipes';
@@ -414,21 +415,28 @@ const RecipeDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const perServingNutrition = recipe?.nutrition ?? null;
   const isOwner = !!recipe?.userId && recipe.userId === currentUserId;
 
-  /**
-   * Syncs the header buttons whenever ownership, favourite state, or recipe
-   * identity changes. The pencil is only rendered for user-owned recipes;
-   * the heart is always present for authenticated users.
-   */
-  useEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+  return (
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      {/* Custom header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          accessibilityRole="button"
+          accessibilityLabel="Retour"
+        >
+          <Ionicons name="chevron-back" size={26} color={Colors.sageDark} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle} numberOfLines={1}>
+          {recipe?.name ?? route.params.recipeName}
+        </Text>
+        <View style={styles.headerActions}>
           {isOwner && (
             <TouchableOpacity
               onPress={() => navigation.navigate('RecipeForm', { recipeId })}
               accessibilityRole="button"
               accessibilityLabel="Modifier la recette"
-              style={{ padding: 8 }}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Ionicons
                 name="create-outline"
@@ -444,7 +452,7 @@ const RecipeDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             accessibilityLabel={
               isFavorited ? 'Retirer des favoris' : 'Ajouter aux favoris'
             }
-            style={{ padding: 8 }}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Ionicons
               name={isFavorited ? 'heart' : 'heart-outline'}
@@ -453,220 +461,232 @@ const RecipeDetailScreen: React.FC<Props> = ({ route, navigation }) => {
             />
           </TouchableOpacity>
         </View>
-      ),
-    });
-  }, [
-    isOwner,
-    isFavorited,
-    favoriteWriting,
-    toggleFavorite,
-    navigation,
-    recipeId,
-  ]);
-
-  if (loading) {
-    return (
-      <View style={styles.errorContainer}>
-        <ActivityIndicator size="large" color={Colors.sageDark} />
       </View>
-    );
-  }
 
-  if (!recipe) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Recette non trouvée</Text>
-      </View>
-    );
-  }
-
-  return (
-    <ScrollView
-      style={styles.scroll}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* Recipe title */}
-      <Text style={styles.title}>{recipe.name}</Text>
-
-      {/* Interactive serving scaler pill */}
-      <View style={styles.metaPill}>
-        <TouchableOpacity
-          onPress={() => changeServings(-1, recipe.quantity)}
-          disabled={atMin}
-          accessibilityRole="button"
-          accessibilityLabel="Réduire les portions"
-          accessibilityState={{ disabled: atMin }}
-          hitSlop={HIT_SLOP}
+      {loading ? (
+        <View style={styles.errorContainer}>
+          <ActivityIndicator size="large" color={Colors.sageDark} />
+        </View>
+      ) : !recipe ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Recette non trouvée</Text>
+        </View>
+      ) : (
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
         >
-          <Text
-            style={[styles.scalerButton, atMin && styles.scalerButtonDisabled]}
-          >
-            −
-          </Text>
-        </TouchableOpacity>
+          {/* Interactive serving scaler pill */}
+          <View style={styles.metaPill}>
+            <TouchableOpacity
+              onPress={() => changeServings(-1, recipe.quantity)}
+              disabled={atMin}
+              accessibilityRole="button"
+              accessibilityLabel="Réduire les portions"
+              accessibilityState={{ disabled: atMin }}
+              hitSlop={HIT_SLOP}
+            >
+              <Text
+                style={[
+                  styles.scalerButton,
+                  atMin && styles.scalerButtonDisabled,
+                ]}
+              >
+                −
+              </Text>
+            </TouchableOpacity>
 
-        <Text style={styles.metaText}>
-          {currentServings} portion{currentServings > 1 ? 's' : ''}
-        </Text>
+            <Text style={styles.metaText}>
+              {currentServings} portion{currentServings > 1 ? 's' : ''}
+            </Text>
 
-        <TouchableOpacity
-          onPress={() => changeServings(1, recipe.quantity)}
-          disabled={atMax}
-          accessibilityRole="button"
-          accessibilityLabel="Augmenter les portions"
-          accessibilityState={{ disabled: atMax }}
-          hitSlop={HIT_SLOP}
-        >
-          <Text
-            style={[styles.scalerButton, atMax && styles.scalerButtonDisabled]}
-          >
-            +
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Nutrition card — rendered only when per-serving data is available */}
-      {perServingNutrition !== null && (
-        <View style={styles.nutritionCard}>
-          <View style={styles.nutritionPills}>
-            {/* KCAL */}
-            <View style={styles.nutritionPill}>
-              <Text style={styles.nutritionLabel}>KCAL</Text>
-              <Text style={styles.nutritionValue}>
-                {perServingNutrition.kcal}
+            <TouchableOpacity
+              onPress={() => changeServings(1, recipe.quantity)}
+              disabled={atMax}
+              accessibilityRole="button"
+              accessibilityLabel="Augmenter les portions"
+              accessibilityState={{ disabled: atMax }}
+              hitSlop={HIT_SLOP}
+            >
+              <Text
+                style={[
+                  styles.scalerButton,
+                  atMax && styles.scalerButtonDisabled,
+                ]}
+              >
+                +
               </Text>
-              <Text style={styles.nutritionUnit}>kcal</Text>
-            </View>
-            {/* PROT. */}
-            <View style={styles.nutritionPill}>
-              <Text style={styles.nutritionLabel}>PROT.</Text>
-              <Text style={styles.nutritionValue}>
-                {perServingNutrition.proteines}
-              </Text>
-              <Text style={styles.nutritionUnit}>g</Text>
-            </View>
-            {/* GLUC. */}
-            <View style={styles.nutritionPill}>
-              <Text style={styles.nutritionLabel}>GLUC.</Text>
-              <Text style={styles.nutritionValue}>
-                {perServingNutrition.glucides}
-              </Text>
-              <Text style={styles.nutritionUnit}>g</Text>
-            </View>
-            {/* LIP. */}
-            <View style={styles.nutritionPill}>
-              <Text style={styles.nutritionLabel}>LIP.</Text>
-              <Text style={styles.nutritionValue}>
-                {perServingNutrition.lipides}
-              </Text>
-              <Text style={styles.nutritionUnit}>g</Text>
-            </View>
+            </TouchableOpacity>
           </View>
-          <View style={styles.nutritionFootnoteRow}>
-            <Text style={styles.nutritionFootnote}>Par portion</Text>
-            {recipe.nutritionSource === 'ai_estimated' && (
-              <View style={styles.aiBadge}>
-                <Ionicons
-                  name="sparkles-outline"
-                  size={11}
-                  color={Colors.accentGreen}
-                />
-                <Text style={styles.aiBadgeText}>Estimé par IA</Text>
+
+          {/* Nutrition card — rendered only when per-serving data is available */}
+          {perServingNutrition !== null && (
+            <View style={styles.nutritionCard}>
+              <View style={styles.nutritionPills}>
+                {/* KCAL */}
+                <View style={styles.nutritionPill}>
+                  <Text style={styles.nutritionLabel}>KCAL</Text>
+                  <Text style={styles.nutritionValue}>
+                    {perServingNutrition.kcal}
+                  </Text>
+                  <Text style={styles.nutritionUnit}>kcal</Text>
+                </View>
+                {/* PROT. */}
+                <View style={styles.nutritionPill}>
+                  <Text style={styles.nutritionLabel}>PROT.</Text>
+                  <Text style={styles.nutritionValue}>
+                    {perServingNutrition.proteines}
+                  </Text>
+                  <Text style={styles.nutritionUnit}>g</Text>
+                </View>
+                {/* GLUC. */}
+                <View style={styles.nutritionPill}>
+                  <Text style={styles.nutritionLabel}>GLUC.</Text>
+                  <Text style={styles.nutritionValue}>
+                    {perServingNutrition.glucides}
+                  </Text>
+                  <Text style={styles.nutritionUnit}>g</Text>
+                </View>
+                {/* LIP. */}
+                <View style={styles.nutritionPill}>
+                  <Text style={styles.nutritionLabel}>LIP.</Text>
+                  <Text style={styles.nutritionValue}>
+                    {perServingNutrition.lipides}
+                  </Text>
+                  <Text style={styles.nutritionUnit}>g</Text>
+                </View>
               </View>
-            )}
-          </View>
-        </View>
-      )}
-
-      {/* Per-recipe user note */}
-      <NoteCard
-        note={note}
-        loading={noteLoading}
-        error={noteError}
-        onSave={saveNote}
-      />
-
-      {/* Ingredients section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>Ingrédients</Text>
-        <View style={styles.ingredientsList}>
-          {recipe.ingredients.map((ingredient, index) => {
-            const isChecked = checked.has(index);
-            const displayText = scaleIngredient(ingredient, ratio);
-            return (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.ingredientRow,
-                  isChecked && styles.ingredientRowChecked,
-                ]}
-                onPress={() => toggle(index)}
-                activeOpacity={0.6}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: isChecked }}
-                accessibilityLabel={displayText}
-              >
-                {/* Checkbox indicator — filled green when checked, sage dot when not */}
-                {isChecked ? (
-                  <View style={styles.checkboxFilled}>
-                    <Text style={styles.checkmark}>✓</Text>
+              <View style={styles.nutritionFootnoteRow}>
+                <Text style={styles.nutritionFootnote}>Par portion</Text>
+                {recipe.nutritionSource === 'ai_estimated' && (
+                  <View style={styles.aiBadge}>
+                    <Ionicons
+                      name="sparkles-outline"
+                      size={11}
+                      color={Colors.accentGreen}
+                    />
+                    <Text style={styles.aiBadgeText}>Estimé par IA</Text>
                   </View>
-                ) : (
-                  <View style={styles.dot} />
                 )}
-                <Text
-                  style={[
-                    styles.ingredientText,
-                    isChecked && styles.ingredientTextChecked,
-                  ]}
-                >
-                  {displayText}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </View>
+              </View>
+            </View>
+          )}
 
-      {/* Instructions section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionLabel}>Instructions</Text>
-        <View style={styles.stepsList}>
-          {recipe.instructions.map((step, index) => {
-            const isChecked = checkedSteps.has(index);
-            // The first unchecked step gets a passive left-border highlight so
-            // the cook's eye is drawn to the current step without storing extra state.
-            const isCurrentStep = index === firstUncheckedStep;
-            return (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.stepRow,
-                  isChecked && styles.stepRowChecked,
-                  isCurrentStep && styles.stepRowCurrent,
-                ]}
-                onPress={() => toggleStep(index)}
-                activeOpacity={0.6}
-                accessibilityRole="checkbox"
-                accessibilityState={{ checked: isChecked }}
-                accessibilityLabel={`Étape ${index + 1} : ${step}`}
-              >
-                {/* Step number — replaced by ✓ glyph when checked */}
-                <Text style={styles.stepNumber}>
-                  {isChecked ? '✓' : `${index + 1}`}
-                </Text>
-                <Text style={styles.stepText}>{step}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </View>
-    </ScrollView>
+          {/* Per-recipe user note */}
+          <NoteCard
+            note={note}
+            loading={noteLoading}
+            error={noteError}
+            onSave={saveNote}
+          />
+
+          {/* Ingredients section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Ingrédients</Text>
+            <View style={styles.ingredientsList}>
+              {recipe.ingredients.map((ingredient, index) => {
+                const isChecked = checked.has(index);
+                const displayText = scaleIngredient(ingredient, ratio);
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.ingredientRow,
+                      isChecked && styles.ingredientRowChecked,
+                    ]}
+                    onPress={() => toggle(index)}
+                    activeOpacity={0.6}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: isChecked }}
+                    accessibilityLabel={displayText}
+                  >
+                    {/* Checkbox indicator — filled green when checked, sage dot when not */}
+                    {isChecked ? (
+                      <View style={styles.checkboxFilled}>
+                        <Text style={styles.checkmark}>✓</Text>
+                      </View>
+                    ) : (
+                      <View style={styles.dot} />
+                    )}
+                    <Text
+                      style={[
+                        styles.ingredientText,
+                        isChecked && styles.ingredientTextChecked,
+                      ]}
+                    >
+                      {displayText}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+
+          {/* Instructions section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>Instructions</Text>
+            <View style={styles.stepsList}>
+              {recipe.instructions.map((step, index) => {
+                const isChecked = checkedSteps.has(index);
+                // The first unchecked step gets a passive left-border highlight so
+                // the cook's eye is drawn to the current step without storing extra state.
+                const isCurrentStep = index === firstUncheckedStep;
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.stepRow,
+                      isChecked && styles.stepRowChecked,
+                      isCurrentStep && styles.stepRowCurrent,
+                    ]}
+                    onPress={() => toggleStep(index)}
+                    activeOpacity={0.6}
+                    accessibilityRole="checkbox"
+                    accessibilityState={{ checked: isChecked }}
+                    accessibilityLabel={`Étape ${index + 1} : ${step}`}
+                  >
+                    {/* Step number — replaced by ✓ glyph when checked */}
+                    <Text style={styles.stepNumber}>
+                      {isChecked ? '✓' : `${index + 1}`}
+                    </Text>
+                    <Text style={styles.stepText}>{step}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        </ScrollView>
+      )}
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 22,
+    fontWeight: '700',
+    color: Colors.sageDark,
+    marginHorizontal: 8,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   scroll: {
     flex: 1,
     backgroundColor: Colors.background,
@@ -685,14 +705,6 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 16,
     color: Colors.textPlaceholder,
-  },
-  title: {
-    fontSize: 30,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-    letterSpacing: -0.5,
-    lineHeight: 36,
-    marginBottom: 14,
   },
   metaPill: {
     flexDirection: 'row',
