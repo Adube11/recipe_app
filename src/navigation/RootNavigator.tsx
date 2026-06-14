@@ -5,7 +5,7 @@ import {
   useNavigationContainerRef,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import useShareIntent from 'expo-share-intent';
+import { useShareIntent } from 'expo-share-intent';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@services/supabase';
 import { BottomTabNavigator } from '@navigation/BottomTabNavigator';
