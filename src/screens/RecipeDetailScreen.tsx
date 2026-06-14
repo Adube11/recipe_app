@@ -429,9 +429,6 @@ const RecipeDetailScreen: React.FC<Props> = ({ route, navigation }) => {
         >
           <Ionicons name="chevron-back" size={26} color={Colors.sageDark} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>
-          {recipe?.name ?? route.params.recipeName}
-        </Text>
         <View style={styles.headerActions}>
           {isOwner && (
             <TouchableOpacity
@@ -479,6 +476,9 @@ const RecipeDetailScreen: React.FC<Props> = ({ route, navigation }) => {
           contentContainerStyle={styles.content}
           showsVerticalScrollIndicator={false}
         >
+          {/* Recipe title */}
+          <Text style={styles.recipeTitle}>{recipe.name}</Text>
+
           {/* Interactive serving scaler pill */}
           <View style={styles.metaPill}>
             <TouchableOpacity
@@ -672,17 +672,18 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
-  headerTitle: {
-    flex: 1,
-    fontSize: 22,
+  recipeTitle: {
+    fontSize: 26,
     fontWeight: '700',
     color: Colors.sageDark,
-    marginHorizontal: 8,
+    lineHeight: 32,
+    marginBottom: 20,
   },
   headerActions: {
     flexDirection: 'row',
