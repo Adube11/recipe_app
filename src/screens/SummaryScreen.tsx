@@ -13,6 +13,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useRecipes } from '@hooks/useRecipes';
 import recipeService from '@services/recipeService';
+import { supabase } from '@services/supabase';
 import { RootStackParamList, Category } from '@t/index';
 import { Colors } from '@constants/colors';
 
@@ -38,6 +39,7 @@ const SummaryScreen: React.FC<Props> = ({ navigation }) => {
    * network calls (one per category).
    */
   const [countMap, setCountMap] = useState<Record<string, number>>({});
+  const [pendingJobId, setPendingJobId] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -52,6 +54,20 @@ const SummaryScreen: React.FC<Props> = ({ navigation }) => {
           map[recipe.category] = (map[recipe.category] ?? 0) + 1;
         }
         setCountMap(map);
+
+        const { data: sessionData } = await supabase.auth.getSession();
+        const userId = sessionData.session?.user?.id;
+        if (userId) {
+          const { data: pendingJob } = await supabase
+            .from('import_jobs')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('status', 'done')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (!cancelled) setPendingJobId(pendingJob?.id ?? null);
+        }
       };
 
       loadCounts();
@@ -115,6 +131,19 @@ const SummaryScreen: React.FC<Props> = ({ navigation }) => {
             </TouchableOpacity>
           </View>
         </View>
+        {pendingJobId && (
+          <TouchableOpacity
+            style={styles.importBanner}
+            onPress={() =>
+              navigation.navigate('ImportReview', { jobId: pendingJobId! })
+            }
+            activeOpacity={0.8}
+          >
+            <Text style={styles.importBannerText}>
+              Une recette vous attend →
+            </Text>
+          </TouchableOpacity>
+        )}
         <FlatList
           data={categories}
           keyExtractor={(item) => item.id}
@@ -199,6 +228,20 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: Colors.textMuted,
     marginTop: 4,
+  },
+  importBanner: {
+    marginHorizontal: 20,
+    marginTop: 12,
+    backgroundColor: Colors.pillBackground,
+    borderRadius: 10,
+    padding: 14,
+    borderLeftWidth: 3,
+    borderLeftColor: Colors.accentGreen,
+  },
+  importBannerText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.sageDark,
   },
 });
 

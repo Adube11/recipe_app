@@ -33,6 +33,7 @@ type DbRecipe = {
   nutrition: Recipe['nutrition'] | null;
   user_id: string | null;
   nutrition_source: 'manual' | 'ai_estimated' | null;
+  source_url: string | null;
 };
 
 /** Data shape accepted by addRecipe and updateRecipe. */
@@ -52,6 +53,7 @@ export type RecipeFormData = {
     lipides: number;
   };
   nutritionSource: 'manual' | 'ai_estimated' | null;
+  sourceUrl?: string;
 };
 
 /**
@@ -75,6 +77,7 @@ function mapRow(row: DbRecipe): Recipe {
     nutrition: row.nutrition ?? undefined,
     userId: row.user_id,
     nutritionSource: row.nutrition_source,
+    sourceUrl: row.source_url ?? undefined,
   };
 }
 
@@ -180,6 +183,7 @@ class RecipeService {
         instructions: data.instructions,
         nutrition: data.nutrition ?? null,
         nutrition_source: data.nutritionSource,
+        source_url: data.sourceUrl ?? null,
         user_id: userId,
       })
       .select()

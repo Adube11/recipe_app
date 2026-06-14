@@ -7,6 +7,8 @@ import CategoryScreen from '@screens/CategoryScreen';
 import RecipeDetailScreen from '@screens/RecipeDetailScreen';
 import CompteScreen from '@screens/CompteScreen';
 import RecipeFormScreen from '@screens/RecipeFormScreen';
+import ImportProcessingScreen from '@screens/ImportProcessingScreen';
+import ImportReviewScreen from '@screens/ImportReviewScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -61,6 +63,16 @@ export const RecettesStack = () => {
             ? 'Modifier la recette'
             : 'Nouvelle recette',
         })}
+      />
+      <Stack.Screen
+        name="ImportProcessing"
+        component={ImportProcessingScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ImportReview"
+        component={ImportReviewScreen}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

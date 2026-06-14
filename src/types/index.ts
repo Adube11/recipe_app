@@ -37,6 +37,7 @@ export type Recipe = {
   userId: string | null;
   /** Source of nutrition data; drives the AI badge in RecipeDetailScreen. */
   nutritionSource: 'manual' | 'ai_estimated' | null;
+  sourceUrl?: string;
 };
 
 export type Category = {
@@ -52,6 +53,8 @@ export type RootStackParamList = {
   RecipeDetail: RecipeDetailParams;
   Compte: undefined;
   RecipeForm: { recipeId?: string };
+  ImportProcessing: { url: string };
+  ImportReview: { jobId: string };
 };
 
 export type AuthStackParamList = {

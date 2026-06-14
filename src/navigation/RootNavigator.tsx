@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  useNavigationContainerRef,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import useShareIntent from 'expo-share-intent';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '@services/supabase';
 import { BottomTabNavigator } from '@navigation/BottomTabNavigator';
@@ -22,9 +26,28 @@ const AuthStack = createNativeStackNavigator<AuthStackParamList>();
  * The onAuthStateChange listener keeps the gate in sync for the lifetime
  * of the app — handles token expiry, sign-out, and sign-in from any screen.
  */
+const linking = {
+  prefixes: ['recipeapp://'],
+  config: {
+    screens: {
+      Recettes: {
+        screens: {
+          ImportProcessing: {
+            path: 'import',
+            parse: { url: (url: string) => decodeURIComponent(url) },
+          },
+        },
+      },
+    },
+  },
+};
+
 export const RootNavigator = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [navReady, setNavReady] = useState(false);
+  const navigationRef = useNavigationContainerRef();
+  const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntent();
 
   useEffect(() => {
     const {
@@ -39,12 +62,27 @@ export const RootNavigator = () => {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!navReady || !session || !hasShareIntent) return;
+    const url = shareIntent.webUrl ?? shareIntent.text ?? '';
+    if (!url.includes('instagram.com')) return;
+    resetShareIntent();
+    navigationRef.navigate('Recettes', {
+      screen: 'ImportProcessing',
+      params: { url },
+    } as never);
+  }, [hasShareIntent, shareIntent, navReady, session]);
+
   if (loading) {
     return <View style={styles.splash} />;
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      ref={navigationRef}
+      linking={linking}
+      onReady={() => setNavReady(true)}
+    >
       {session ? (
         <BottomTabNavigator />
       ) : (
